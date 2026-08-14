@@ -1,0 +1,18 @@
+"use client";
+
+import { animate, motion, useMotionValue, useMotionValueEvent, useTransform } from "motion/react";
+import { useEffect, useRef, useState } from "react";
+import "./ElasticSlider.css";
+
+const MAX_OVERFLOW = 50;
+
+export default function ElasticSlider({ defaultValue = 50, startingValue = 0, maxValue = 100, className = "", isStepped = false, stepSize = 1, leftIcon = <span aria-hidden="true">−</span>, rightIcon = <span aria-hidden="true">＋</span>, onChange }) {
+  const [value, setValue] = useState(defaultValue); const [region, setRegion] = useState("middle"); const sliderRef = useRef(null); const clientX = useMotionValue(0); const overflow = useMotionValue(0); const scale = useMotionValue(1);
+  useEffect(() => { setValue(defaultValue); }, [defaultValue]);
+  useMotionValueEvent(clientX, "change", latest => { if (!sliderRef.current) return; const { left, right } = sliderRef.current.getBoundingClientRect(); const amount = latest < left ? left - latest : latest > right ? latest - right : 0; setRegion(latest < left ? "left" : latest > right ? "right" : "middle"); overflow.jump(decay(amount, MAX_OVERFLOW)); });
+  const updateValue = e => { if (!sliderRef.current) return; const { left, width } = sliderRef.current.getBoundingClientRect(); let next = startingValue + ((e.clientX - left) / width) * (maxValue - startingValue); if (isStepped) next = Math.round(next / stepSize) * stepSize; next = Math.min(Math.max(next, startingValue), maxValue); setValue(next); onChange?.(next); clientX.jump(e.clientX); };
+  const percentage = ((value - startingValue) / Math.max(maxValue - startingValue, 1)) * 100;
+  return <div className={`elastic-slider ${className}`}><motion.div className="elastic-slider__wrapper" onHoverStart={() => animate(scale, 1.18)} onHoverEnd={() => animate(scale, 1)} onTouchStart={() => animate(scale, 1.18)} onTouchEnd={() => animate(scale, 1)} style={{ scale, opacity: useTransform(scale, [1, 1.18], [.68, 1]) }}><motion.div animate={{ scale: region === "left" ? [1, 1.35, 1] : 1 }} style={{ x: useTransform(() => region === "left" ? -overflow.get() / scale.get() : 0) }} className="elastic-slider__icon">{leftIcon}</motion.div><div ref={sliderRef} className="elastic-slider__root" onPointerMove={e => e.buttons > 0 && updateValue(e)} onPointerDown={e => { updateValue(e); e.currentTarget.setPointerCapture(e.pointerId); }} onPointerUp={() => animate(overflow, 0, { type: "spring", bounce: .5 })} onPointerCancel={() => animate(overflow, 0, { type: "spring", bounce: .5 })}><motion.div className="elastic-slider__track-wrapper" style={{ scaleX: useTransform(() => sliderRef.current ? 1 + overflow.get() / sliderRef.current.getBoundingClientRect().width : 1), scaleY: useTransform(overflow, [0, MAX_OVERFLOW], [1, .82]), transformOrigin: useTransform(() => sliderRef.current && clientX.get() < sliderRef.current.getBoundingClientRect().left + sliderRef.current.getBoundingClientRect().width / 2 ? "right" : "left"), height: useTransform(scale, [1, 1.18], [6, 11]), marginTop: useTransform(scale, [1, 1.18], [0, -2.5]), marginBottom: useTransform(scale, [1, 1.18], [0, -2.5]) }}><div className="elastic-slider__track"><div className="elastic-slider__range" style={{ width: `${percentage}%` }} /></div></motion.div></div><motion.div animate={{ scale: region === "right" ? [1, 1.35, 1] : 1 }} style={{ x: useTransform(() => region === "right" ? overflow.get() / scale.get() : 0) }} className="elastic-slider__icon">{rightIcon}</motion.div></motion.div><span className="elastic-slider__value">{Math.round(value)}%</span></div>;
+}
+
+function decay(value, max) { if (!max) return 0; return (2 * (1 / (1 + Math.exp(-(value / max))) - .5)) * max; }
