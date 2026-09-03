@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.codex.portfolio.localserver</string>
+
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/zsh</string>
+    <string>/Users/hepevsmbp-2/Library/Application Support/CodexPortfolio/portfolio-local-server.sh</string>
+  </array>
+
+  <key>WorkingDirectory</key>
+  <string>/Users/hepevsmbp-2/Library/Application Support/CodexPortfolio</string>
+
+  <key>RunAtLoad</key>
+  <true/>
+  <key>KeepAlive</key>
+  <true/>
+  <key>ThrottleInterval</key>
+  <integer>10</integer>
+
+  <key>ProcessType</key>
+  <string>Background</string>
+  <key>Nice</key>
+  <integer>5</integer>
+  <key>LowPriorityIO</key>
+  <true/>
+
+  <key>StandardOutPath</key>
+  <string>/Users/hepevsmbp-2/Library/Application Support/CodexPortfolio/server.log</string>
+  <key>StandardErrorPath</key>
+  <string>/Users/hepevsmbp-2/Library/Application Support/CodexPortfolio/server-error.log</string>
+</dict>
+</plist>

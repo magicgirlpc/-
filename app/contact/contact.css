@@ -1,0 +1,163 @@
+.pp-contact {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  min-height: 100dvh;
+  place-items: center;
+  overflow: hidden;
+  padding: 30px;
+  background: #0a0a0a;
+  color: #fafafa;
+  font-family: "Indivisible PP", "Helvetica Neue", Arial, sans-serif;
+  letter-spacing: -.04em;
+}
+
+.pp-contact::before {
+  content: "";
+  position: absolute;
+  inset: -20%;
+  z-index: -1;
+  background-image:
+    radial-gradient(circle at 50% 44%, rgb(33 255 192 / .13), transparent 32%),
+    radial-gradient(circle, rgb(250 250 250 / .5) .55px, transparent .75px);
+  background-size: auto, 8px 8px;
+  opacity: .18;
+  pointer-events: none;
+}
+
+.pp-contact__back {
+  position: fixed;
+  top: 30px;
+  left: 30px;
+  z-index: 2;
+  font-size: 14px;
+  opacity: .7;
+}
+
+.pp-contact__back::after,
+.pp-contact__fallback::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: -4px;
+  left: 0;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform .2s ease;
+}
+
+.pp-contact__back:hover::after,
+.pp-contact__back:focus-visible::after,
+.pp-contact__fallback:hover::after,
+.pp-contact__fallback:focus-visible::after {
+  transform: scaleX(1);
+  transform-origin: left;
+}
+
+.pp-contact__card {
+  position: relative;
+  z-index: 1;
+  width: min(560px, calc(100vw - 60px));
+  padding: clamp(28px, 5vw, 56px);
+  border: 1px solid rgb(250 250 250 / .16);
+  border-radius: 24px;
+  background: rgb(14 14 14 / .82);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+.pp-contact__eyebrow {
+  margin: 0 0 22px;
+  font-size: 12px;
+  letter-spacing: .14em;
+  opacity: .55;
+}
+
+.pp-contact__heading {
+  margin: 0 0 30px;
+  font-size: clamp(40px, 7vw, 72px);
+  font-weight: 500;
+  line-height: .92;
+  letter-spacing: -.055em;
+}
+
+.pp-contact__recipient {
+  margin: 0 0 22px;
+  padding: 15px 17px;
+  border-radius: 12px;
+  background: rgb(250 250 250 / .08);
+  font-size: 18px;
+  overflow-wrap: anywhere;
+}
+
+.pp-contact__description {
+  max-width: 440px;
+  margin: 0 0 28px;
+  font-size: 15px;
+  line-height: 1.45;
+  opacity: .65;
+}
+
+.pp-contact__providers {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.pp-contact__provider {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 15px;
+  border-radius: 999px;
+  background: #fafafa;
+  color: #0a0a0a;
+  font-size: 14px;
+  font-weight: 500;
+  transition: transform .2s ease;
+}
+
+.pp-contact__provider i {
+  display: block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  transition: transform .25s ease;
+}
+
+.pp-contact__provider:hover,
+.pp-contact__provider:focus-visible {
+  transform: translateY(-2px);
+}
+
+.pp-contact__provider:hover i,
+.pp-contact__provider:focus-visible i {
+  transform: scale(1.75);
+}
+
+.pp-contact__fallback {
+  position: relative;
+  display: inline-block;
+  font-size: 14px;
+  opacity: .6;
+}
+
+.pp-contact__back:focus-visible,
+.pp-contact__provider:focus-visible,
+.pp-contact__fallback:focus-visible {
+  outline: 2px solid #21ffc0;
+  outline-offset: 4px;
+}
+
+@media (max-width: 600px) {
+  .pp-contact { padding: 18px; }
+  .pp-contact__back { top: 18px; left: 18px; }
+  .pp-contact__card { width: calc(100vw - 36px); padding: 28px 22px; border-radius: 20px; }
+  .pp-contact__providers { flex-direction: column; }
+  .pp-contact__provider { width: 100%; }
+}
