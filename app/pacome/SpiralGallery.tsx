@@ -471,6 +471,7 @@ export function SpiralGallery({ projects, active }: SpiralGalleryProps) {
               alt=""
               loading="lazy"
               decoding="async"
+              fetchPriority="low"
               draggable={false}
             />
             <span className="pp-spiral__meta">
@@ -489,6 +490,8 @@ export function SpiralGallery({ projects, active }: SpiralGalleryProps) {
             className="pp-spiral__detail-image"
             src={detailProject.image}
             alt=""
+            loading="lazy"
+            decoding="async"
             draggable={false}
           />
           <span className="pp-spiral__detail-title">{detailProject.title}</span>
