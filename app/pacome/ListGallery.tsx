@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
 import type { PacomeProject } from "./data";
+import { playUiSound, setAmbientContext } from "./sound";
 
 type ListGalleryProps = {
   projects: PacomeProject[];
@@ -231,9 +232,14 @@ export default function ListGallery({ projects, active }: ListGalleryProps) {
                 style={projectStyle}
                 aria-label={`${project.title} (${project.year})`}
                 tabIndex={active ? undefined : -1}
-                onPointerEnter={(event) =>
-                  showPreview(index, event.clientX, event.clientY, event.pointerType)
-                }
+                onClick={() => {
+                  playUiSound("open");
+                  setAmbientContext("detail");
+                }}
+                onPointerEnter={(event) => {
+                  if (event.pointerType !== "touch") playUiSound("hover");
+                  showPreview(index, event.clientX, event.clientY, event.pointerType);
+                }}
                 onPointerMove={(event) =>
                   showPreview(index, event.clientX, event.clientY, event.pointerType)
                 }
@@ -254,7 +260,7 @@ export default function ListGallery({ projects, active }: ListGalleryProps) {
         {active && hoveredIndex !== null ? (
           <img
             className="pp-list__preview-image pp-list__preview-image--active"
-            src={projects[hoveredIndex].image}
+            src={projects[hoveredIndex].previewImage ?? projects[hoveredIndex].image}
             alt=""
             width={330}
             height={186}

@@ -7,6 +7,7 @@ import EntryLoader from "./EntryLoader";
 import ListGallery from "./ListGallery";
 import SpiralGallery from "./SpiralGallery";
 import { pacomeProjects } from "./data";
+import { prepareSoundAssets, resumeSoundExperience, setAmbientContext, setSoundEnabled } from "./sound";
 
 export default function PortfolioExperience() {
   const searchParams = useSearchParams();
@@ -16,6 +17,12 @@ export default function PortfolioExperience() {
   const [entered, setEntered] = useState(false);
   const [soundOn, setSoundOn] = useState(false);
   const [view, setView] = useState<"spiral" | "list">(initialView);
+
+  useEffect(() => {
+    prepareSoundAssets();
+    setAmbientContext("gallery");
+    if (resume) setSoundOn(resumeSoundExperience());
+  }, [resume]);
 
   useEffect(() => {
     if (!resume) return;
@@ -43,7 +50,11 @@ export default function PortfolioExperience() {
           view={view}
           onViewChange={setView}
           soundOn={soundOn}
-          onSoundToggle={() => setSoundOn((value) => !value)}
+          onSoundToggle={() => {
+            const next = !soundOn;
+            setSoundEnabled(next, true);
+            setSoundOn(next);
+          }}
         />
       ) : (
         <EntryLoader

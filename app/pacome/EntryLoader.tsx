@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { AnimationItem } from "lottie-web";
+import { beginSoundExperience, setSoundEnabled } from "./sound";
 
 type EntryLoaderProps = {
   onEnter: (soundOn: boolean) => void;
@@ -108,6 +109,8 @@ export default function EntryLoader({ onEnter }: EntryLoaderProps) {
 
   const enter = (soundOn: boolean) => {
     if (leaving || !ready) return;
+    if (soundOn) beginSoundExperience();
+    else setSoundEnabled(false);
     setLeaving(true);
     window.setTimeout(() => onEnter(soundOn), 520);
   };

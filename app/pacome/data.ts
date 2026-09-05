@@ -3,6 +3,8 @@ export type PacomeProject = {
   slug: string;
   year: string;
   image: string;
+  /** A small, screen-sized derivative used only by the animated galleries. */
+  previewImage?: string;
   href: string;
   description: string;
   playbackId: string;
@@ -146,6 +148,7 @@ export const pacomeProjects: PacomeProject[] = Array.from({ length: projectTitle
     slug,
     year: "",
     image,
+    previewImage: `/portfolio/project-${number}/cover-optimized.jpg`,
     href: `/projects/${slug}`,
     description: projectDescriptions[index],
     playbackId: "",
@@ -486,8 +489,8 @@ export const pacomeProjects: PacomeProject[] = Array.from({ length: projectTitle
             (frameNumber) => `/portfolio/project-09/styleframes/styleframe-${String(frameNumber).padStart(2, "0")}.jpg`,
           )
       : index === 9
-        ? Array.from({ length: 17 }, (_, frameIndex) =>
-            `/portfolio/project-10/styleframes/${String(frameIndex + 1).padStart(2, "0")}.jpg`,
+        ? [16, 17, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15].map(
+            (frameNumber) => `/portfolio/project-10/styleframes/${String(frameNumber).padStart(2, "0")}.jpg`,
           )
       : index === 10
         ? ["/portfolio/project-11/styleframes/01.jpg", "/portfolio/project-11/styleframes/02.jpg"]

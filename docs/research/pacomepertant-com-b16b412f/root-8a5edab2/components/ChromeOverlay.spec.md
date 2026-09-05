@@ -2,7 +2,7 @@
 
 ## Overview
 - Target file: `app/pacome/ChromeOverlay.tsx`
-- Interaction model: click-driven menu/sound/view switch; hover-driven logo, buttons and showreel
+- Interaction model: click-driven logo/menu/sound/view switch; hover-driven buttons and showreel
 
 ## DOM Structure
 Fixed logo; centered view switch; right menu pill plus expanding drawer; bottom-left showreel card; bottom-right sound button.
@@ -19,6 +19,7 @@ Fixed logo; centered view switch; right menu pill plus expanding drawer; bottom-
 - Sound: fixed 48×48px circle right/bottom 30px, white background, dark icon.
 
 ## States & Behaviors
+- Logo click cycles through four expression states in the exact source order `face1 → face3 → face4 → face5 → face1`. Each click restarts the short, non-looping logo motion and triggers a smiley interaction sound. The hover tag reads `Click!!` in the reference.
 - View labels roll by translating the first span down and the second span from -100% to 0 in `.3s var(--ease-spring)` while option opacity changes over `.3s ease-out`. This extracted header motion stays synchronized with the overlapping gallery transitions; no instant text swap is allowed.
 - Menu expands/collapses; overlay blurs/dims the gallery.
 - Showreel hover transform changes to rotate(-13deg) scale(1.05).

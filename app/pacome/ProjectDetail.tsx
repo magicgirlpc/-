@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from "react";
 
 import type { PacomeProject } from "./data";
 import ProjectVideo from "./ProjectVideo";
+import { playUiSound, resumeSoundExperience, setAmbientContext } from "./sound";
 
 // These are the portrait deliverables in project 16. The desktop grid lets
 // each one span the two compact rows occupied by adjacent landscape images.
@@ -113,7 +114,11 @@ export default function ProjectDetail({ project, nextProject }: {
       : "播放完整视频";
   const hasStyleframes = project.styleframes.length > 0;
 
-  const closeProject = () => router.push(returnHref);
+  const closeProject = () => {
+    playUiSound("back");
+    setAmbientContext("gallery");
+    router.push(returnHref);
+  };
   const openPlayer = () => {
     if (project.mainExternalUrl) {
       window.open(project.mainExternalUrl, "_blank", "noopener,noreferrer");
@@ -122,6 +127,11 @@ export default function ProjectDetail({ project, nextProject }: {
     if (hasVideo) setPlayerOpen(true);
   };
   const closePlayer = () => setPlayerOpen(false);
+
+  useEffect(() => {
+    setAmbientContext("detail");
+    resumeSoundExperience();
+  }, []);
 
   useEffect(() => {
     if (!playerOpen) return;
@@ -460,8 +470,11 @@ export default function ProjectDetail({ project, nextProject }: {
       ) : null}
 
       <section className="pp-project-next" aria-label="Next project">
-        <Link className="pp-project-back" href={returnHref}>back to home</Link>
-        <Link className="pp-project-next-image-wrap" href={`${nextProject.href}?from=${origin}`} aria-label={`Next project: ${nextProject.title}`}>
+        <Link className="pp-project-back" href={returnHref} onClick={() => {
+          playUiSound("back");
+          setAmbientContext("gallery");
+        }}>back to home</Link>
+        <Link className="pp-project-next-image-wrap" href={`${nextProject.href}?from=${origin}`} aria-label={`Next project: ${nextProject.title}`} onClick={() => playUiSound("open")}>
           <img className="pp-project-next-image" src={nextProject.image} alt="" />
           <span className="pp-project-next-tag pp-project-next-tag--top">keep scrolling !</span>
           <span className="pp-project-next-tag pp-project-next-tag--bottom">next up...</span>
