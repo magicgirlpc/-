@@ -117,7 +117,8 @@ export default function ProjectDetail({ project, nextProject }: {
   const closeProject = () => {
     playUiSound("back");
     setAmbientContext("gallery");
-    router.push(returnHref);
+    window.scrollTo(0, 0);
+    router.push(returnHref, { scroll: true });
   };
   const openPlayer = () => {
     if (project.mainExternalUrl) {
@@ -200,7 +201,7 @@ export default function ProjectDetail({ project, nextProject }: {
 
       <article className="pp-project-card" id="project-infos">
         <div className={`pp-project-video-wrap${hasVideo ? "" : " pp-project-video-wrap--empty"}`}>
-          <ProjectVideo playbackId={project.playbackId} sourceUrl={project.previewVideoUrl ?? project.videoUrl} poster={project.image} title={project.title} defer={project.slug === "project-02"} />
+          <ProjectVideo playbackId={project.playbackId} sourceUrl={project.previewVideoUrl ?? project.videoUrl} poster={project.image} title={project.title} />
           {hasVideo ? (
             <button
               className="pp-project-video-action"
@@ -320,9 +321,11 @@ export default function ProjectDetail({ project, nextProject }: {
           {Array.from({ length: project.styleframes.length || 6 }, (_, index) => {
             const image = project.styleframes[index];
             if (isProject03 && index >= visibleStyleframes) return null;
-            const displayImage = project.slug === "project-02" || project.slug === "project-03"
+            const displayImage = project.slug === "project-02"
               ? image?.replace("/styleframes/", "/styleframes/preview/")
-              : image;
+              : project.slug === "project-03"
+                ? image?.replace("/styleframes/", "/styleframes/thumbs/")
+                : image;
             const featured = project.slug === "project-02"
               ? index === 0 || index === 11 || index === project.styleframes.length - 1
               : project.slug === "project-12"
@@ -470,9 +473,10 @@ export default function ProjectDetail({ project, nextProject }: {
       ) : null}
 
       <section className="pp-project-next" aria-label="Next project">
-        <Link className="pp-project-back" href={returnHref} onClick={() => {
+        <Link className="pp-project-back" href={returnHref} scroll onClick={() => {
           playUiSound("back");
           setAmbientContext("gallery");
+          window.scrollTo(0, 0);
         }}>back to home</Link>
         <Link className="pp-project-next-image-wrap" href={`${nextProject.href}?from=${origin}`} aria-label={`Next project: ${nextProject.title}`} onClick={() => playUiSound("open")}>
           <img className="pp-project-next-image" src={nextProject.image} alt="" />

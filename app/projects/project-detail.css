@@ -98,7 +98,8 @@
 
 .pp-project-video-action {
   position: absolute;
-  bottom: clamp(24px, 5vw, 64px);
+  top: min(calc(100svh - 88px), calc(100% - clamp(24px, 5vw, 64px)));
+  bottom: auto;
   left: 50%;
   z-index: 6;
   display: block;
@@ -111,14 +112,18 @@
   font-weight: 500;
   white-space: nowrap;
   cursor: pointer;
-  transform: translateX(-50%) scale(1);
+  transform: translate(-50%, -100%) scale(1);
   transform-origin: center;
   transition: transform .38s cubic-bezier(.16, 1.5, .3, 1), background-color .2s ease;
 }
 
-.pp-project-video-action:hover { transform: translateX(-50%) scale(1.045); }
-.pp-project-video-action:active { transform: translateX(-50%) scale(.88); transition-duration: .08s; transition-timing-function: ease-out; }
+.pp-project-video-action:hover { transform: translate(-50%, -100%) scale(1.045); }
+.pp-project-video-action:active { transform: translate(-50%, -100%) scale(.88); transition-duration: .08s; transition-timing-function: ease-out; }
 .pp-project-video-action:focus-visible { outline: 3px solid #fff; outline-offset: 4px; }
+
+@media (min-width: 901px) {
+  .pp-project-page--project-02 .pp-project-video-action { left: 73%; }
+}
 
 .pp-project-player {
   position: fixed;
@@ -731,7 +736,7 @@
   .pp-project-page::before { border-radius: 0 0 24px 24px; }
   .pp-project-close { width: 44px; height: 44px; }
   .pp-project-video-wrap { height: auto; aspect-ratio: 16 / 9; }
-  .pp-project-video-action { bottom: 18px; padding: 9px 15px 10px; font-size: 15px; }
+  .pp-project-video-action { top: min(calc(100svh - 72px), calc(100% - 34px)); bottom: auto; padding: 9px 15px 10px; font-size: 15px; }
   .pp-project-player { padding: 0; }
   .pp-project-player-close { top: 14px; right: 14px; width: 46px; height: 46px; }
   .pp-project-info { padding: 42px 18px 48px; gap: 30px; grid-template-columns: 1fr; }

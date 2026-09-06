@@ -155,7 +155,7 @@ export const pacomeProjects: PacomeProject[] = Array.from({ length: projectTitle
     previewVideoUrl: index === 0
       ? "/portfolio/project-01/video-preview.mp4"
       : index === 1
-        ? "/portfolio/project-02/video-preview.m4v"
+        ? "/portfolio/project-02/video-preview-web.m4v"
       : index === 3
         ? "/portfolio/project-04/video-preview.mp4"
       : index === 4

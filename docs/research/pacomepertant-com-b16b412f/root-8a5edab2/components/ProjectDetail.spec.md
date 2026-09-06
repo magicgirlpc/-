@@ -23,6 +23,16 @@
 - Project card enters from a small downward offset and subtle scale reduction over about 900ms; opacity never flashes from a fully black blank page.
 - Close control fades/scales in after the first reveal beat.
 - `prefers-reduced-motion: reduce` disables curtains and route delay.
+- The primary video action remains inside the hero but its vertical position is capped by the first visual viewport. On ultra-wide/short windows, where a 16:9 hero is taller than the viewport, the action stays visible above the fold instead of following the hero's off-screen bottom edge.
+- The viewport cap leaves a safe inset for subtitles and browser chrome; narrow layouts use a 34px media-bottom inset. Project 02 shifts the desktop action to 73% of the hero width, over its lower-detail right-side background rather than the presenter's face, torso, or hands; mobile remains centered.
+
+### Project 02 loading
+- Project 02 uses the web preview `public/portfolio/project-02/video-preview-web.m4v`: 640×360 (the same 16:9 presentation), fast-start metadata, and approximately 3.5 MB instead of the 9.5 MB master preview.
+- Its hero video begins loading with the other hero media instead of waiting for an idle callback; the image-heavy lower galleries remain deferred/contained.
+
+### Image-heavy styleframes
+- Project 02 resolves lightweight styleframes from `/styleframes/preview/`.
+- Project 03 resolves its lightweight styleframes from the existing `/styleframes/thumbs/` directory. The full-resolution `/styleframes/` paths remain the lightbox sources.
 
 ## Responsive Behavior
 - Desktop and mobile use the same full-viewport curtain.

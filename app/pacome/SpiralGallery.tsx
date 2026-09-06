@@ -488,6 +488,7 @@ export function SpiralGallery({ projects, active }: SpiralGalleryProps) {
       scene.addEventListener("selectstart", preventNativeDrag);
       window.addEventListener("keydown", onKeyDown);
       window.addEventListener("resize", onResize);
+      window.addEventListener("pp:viewportchange", onResize);
       document.addEventListener("visibilitychange", onVisibilityChange);
       motionQuery.addEventListener("change", onMotionChange);
       startAnimation();
@@ -512,6 +513,7 @@ export function SpiralGallery({ projects, active }: SpiralGalleryProps) {
       scene.removeEventListener("selectstart", preventNativeDrag);
       window.removeEventListener("keydown", onKeyDown);
       window.removeEventListener("resize", onResize);
+      window.removeEventListener("pp:viewportchange", onResize);
       document.removeEventListener("visibilitychange", onVisibilityChange);
       motionQuery.removeEventListener("change", onMotionChange);
     };
