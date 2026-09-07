@@ -10,6 +10,7 @@ export type ChromeOverlayProps = {
   onViewChange: (view: "spiral" | "list") => void;
   soundOn: boolean;
   onSoundToggle: () => void;
+  onOverlayActivityChange: (active: boolean) => void;
 };
 
 const assetRoot = "/sites/pacomepertant-com-b16b412f/root-8a5edab2";
@@ -150,6 +151,7 @@ export function ChromeOverlay({
   onViewChange,
   soundOn,
   onSoundToggle,
+  onOverlayActivityChange,
 }: ChromeOverlayProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [activePanel, setActivePanel] = useState<"contact" | "resume" | null>(null);
@@ -161,7 +163,10 @@ export function ChromeOverlay({
     const panel = menuPanelRef.current;
     const layerContainer = menuLayersRef.current;
     if (!panel || !layerContainer) return;
-    const layers = Array.from(layerContainer.querySelectorAll<HTMLElement>(".pp-menu__prelayer"));
+    const mobile = window.matchMedia("(max-width: 900px), (pointer: coarse)").matches;
+    const layers = mobile
+      ? []
+      : Array.from(layerContainer.querySelectorAll<HTMLElement>(".pp-menu__prelayer"));
     const context = gsap.context(() => {
       gsap.set([panel, ...layers], { xPercent: 105 });
     });
@@ -172,26 +177,34 @@ export function ChromeOverlay({
     const panel = menuPanelRef.current;
     const layerContainer = menuLayersRef.current;
     if (!panel || !layerContainer) return;
-    const layers = Array.from(layerContainer.querySelectorAll<HTMLElement>(".pp-menu__prelayer"));
+    const mobile = window.matchMedia("(max-width: 900px), (pointer: coarse)").matches;
+    const layers = mobile
+      ? []
+      : Array.from(layerContainer.querySelectorAll<HTMLElement>(".pp-menu__prelayer"));
     const labels = Array.from(panel.querySelectorAll<HTMLElement>(".pp-menu__link-label"));
     const footerItems = Array.from(panel.querySelectorAll<HTMLElement>(".pp-menu__email"));
     const timeline = gsap.timeline();
 
     if (menuOpen) {
-      gsap.set(labels, { yPercent: 135, rotate: 7 });
-      gsap.set(footerItems, { y: 22, opacity: 0 });
+      gsap.set(labels, { yPercent: mobile ? 45 : 135, rotate: mobile ? 0 : 7 });
+      gsap.set(footerItems, { y: mobile ? 10 : 22, opacity: 0 });
       layers.forEach((layer, index) => {
         timeline.to(layer, { xPercent: 0, duration: .52, ease: "power4.out" }, index * .07);
       });
-      timeline.to(panel, { xPercent: 0, duration: .68, ease: "power4.out" }, layers.length ? .15 : 0);
-      timeline.to(labels, { yPercent: 0, rotate: 0, duration: .9, ease: "power4.out", stagger: .1 }, .3);
-      timeline.to(footerItems, { y: 0, opacity: 1, duration: .55, ease: "power3.out", stagger: .06 }, .48);
+      timeline.to(panel, { xPercent: 0, duration: mobile ? .38 : .68, ease: "power4.out" }, layers.length ? .15 : 0);
+      timeline.to(labels, { yPercent: 0, rotate: 0, duration: mobile ? .34 : .9, ease: "power4.out", stagger: mobile ? .035 : .1 }, mobile ? .08 : .3);
+      timeline.to(footerItems, { y: 0, opacity: 1, duration: mobile ? .28 : .55, ease: "power3.out", stagger: .06 }, mobile ? .14 : .48);
     } else {
-      timeline.to([panel, ...layers], { xPercent: 105, duration: .34, ease: "power3.in", overwrite: true });
+      timeline.to([panel, ...layers], { xPercent: 105, duration: mobile ? .26 : .34, ease: "power3.in", overwrite: true });
     }
 
     return () => timeline.kill();
   }, [menuOpen]);
+
+  useEffect(() => {
+    onOverlayActivityChange(menuOpen || activePanel !== null);
+    return () => onOverlayActivityChange(false);
+  }, [activePanel, menuOpen, onOverlayActivityChange]);
 
   useEffect(() => {
     if (!menuOpen && !activePanel) return;

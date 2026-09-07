@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import ChromeOverlay from "./ChromeOverlay";
 import EntryLoader from "./EntryLoader";
@@ -13,11 +13,21 @@ export default function PortfolioExperience() {
   const experienceRef = useRef<HTMLElement>(null);
   const searchParams = useSearchParams();
   const resume = searchParams.get("resume") === "1";
+  const restoreEntered = resume || searchParams.get("entered") === "1";
   const requestedView = searchParams.get("view") === "list" ? "list" : "spiral";
-  const initialView = resume ? requestedView : "spiral";
-  const [entered, setEntered] = useState(resume);
+  const initialView = restoreEntered ? requestedView : "spiral";
+  const [entered, setEntered] = useState(restoreEntered);
   const [soundOn, setSoundOn] = useState(false);
   const [view, setView] = useState<"spiral" | "list">(initialView);
+  const [overlayActive, setOverlayActive] = useState(false);
+
+  const persistEnteredView = useCallback((nextView: "spiral" | "list") => {
+    const url = new URL(window.location.href);
+    url.searchParams.delete("resume");
+    url.searchParams.set("entered", "1");
+    url.searchParams.set("view", nextView);
+    window.history.replaceState(window.history.state, "", `${url.pathname}${url.search}${url.hash}`);
+  }, []);
 
   useLayoutEffect(() => {
     const experience = experienceRef.current;
@@ -27,7 +37,7 @@ export default function PortfolioExperience() {
     const previousScrollRestoration = window.history.scrollRestoration;
     const pendingFrames = new Set<number>();
     const pendingTimers = new Set<number>();
-    let resizeObserver: ResizeObserver | undefined;
+    let lastViewportValue = "";
 
     window.history.scrollRestoration = "manual";
 
@@ -37,9 +47,11 @@ export default function PortfolioExperience() {
         ? visualHeight
         : Math.max(window.innerHeight, root.clientHeight, visualHeight);
       const value = `${Math.ceil(viewportHeight)}px`;
+      if (value === lastViewportValue) return;
+      lastViewportValue = value;
       root.style.setProperty("--pp-viewport-height", value);
       experience.style.setProperty("--pp-viewport-height", value);
-      window.scrollTo(0, 0);
+      if (window.scrollX !== 0 || window.scrollY !== 0) window.scrollTo(0, 0);
       window.dispatchEvent(new Event("pp:viewportchange"));
     };
 
@@ -66,13 +78,13 @@ export default function PortfolioExperience() {
     window.addEventListener("orientationchange", syncViewport);
     window.addEventListener("pageshow", syncViewport);
     window.visualViewport?.addEventListener("resize", syncViewport);
-    resizeObserver = new ResizeObserver(syncViewport);
+    const resizeObserver = new ResizeObserver(syncViewport);
     resizeObserver.observe(root);
 
     return () => {
       pendingFrames.forEach((frame) => window.cancelAnimationFrame(frame));
       pendingTimers.forEach((timer) => window.clearTimeout(timer));
-      resizeObserver?.disconnect();
+      resizeObserver.disconnect();
       window.removeEventListener("resize", syncViewport);
       window.removeEventListener("orientationchange", syncViewport);
       window.removeEventListener("pageshow", syncViewport);
@@ -85,33 +97,35 @@ export default function PortfolioExperience() {
   useEffect(() => {
     prepareSoundAssets();
     setAmbientContext("gallery");
-    if (resume) setSoundOn(resumeSoundExperience());
-  }, [resume]);
+  }, []);
 
   useEffect(() => {
     if (!resume) return;
-    setEntered(true);
     const frame = window.requestAnimationFrame(() => {
-      const url = new URL(window.location.href);
-      url.searchParams.delete("resume");
-      window.history.replaceState(window.history.state, "", `${url.pathname}${url.search}${url.hash}`);
+      setSoundOn(resumeSoundExperience());
+      setEntered(true);
+      persistEnteredView(requestedView);
     });
     return () => window.cancelAnimationFrame(frame);
-  }, [resume]);
+  }, [persistEnteredView, requestedView, resume]);
 
   return (
     <main className={`pp-experience pp-experience--${view}`} id="works" ref={experienceRef}>
       {entered ? (
         <>
-          <SpiralGallery projects={pacomeProjects} active={view === "spiral"} />
+          <SpiralGallery projects={pacomeProjects} active={view === "spiral"} paused={overlayActive} />
           <ListGallery projects={pacomeProjects} active={view === "list"} />
         </>
       ) : null}
       {entered ? (
         <ChromeOverlay
           view={view}
-          onViewChange={setView}
+          onViewChange={(nextView) => {
+            setView(nextView);
+            persistEnteredView(nextView);
+          }}
           soundOn={soundOn}
+          onOverlayActivityChange={setOverlayActive}
           onSoundToggle={() => {
             const next = !soundOn;
             setSoundEnabled(next, true);
@@ -124,6 +138,7 @@ export default function PortfolioExperience() {
             setSoundOn(withSound);
             setView("spiral");
             setEntered(true);
+            persistEnteredView("spiral");
           }}
         />
       )}

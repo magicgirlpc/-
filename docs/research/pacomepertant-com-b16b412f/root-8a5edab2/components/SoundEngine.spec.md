@@ -15,6 +15,7 @@
 - Pause ambient playback while the document is hidden and resume when visible if sound remains enabled.
 - Clamp every fade timestamp and computed volume to valid finite ranges. A newly started fade invalidates the previous animation-frame loop, preventing overlapping fades from writing stale or negative volume values.
 - If autoplay restoration is blocked after a route load, the next sound-enabled user interaction retries the ambient player within that gesture.
+- Coarse-pointer screens up to 900px use a dedicated mobile output profile: ambient and UI effects are multiplied to 62% and 72% of their desktop levels respectively. On WebKit/iOS, media elements are routed through a Web Audio `GainNode` when available because iPhone Safari may ignore direct `HTMLMediaElement.volume` changes. Desktop levels remain unchanged.
 
 ## Assets
 - `public/portfolio/audio/entry.mp3` — 96kbps.
@@ -26,4 +27,4 @@
 - `public/portfolio/audio/ambient.mp3` — 80kbps.
 
 ## Responsive Behavior
-- Identical state and volume behavior on desktop and mobile. Hover sound is naturally desktop-only because touch pointer entry is ignored.
+- Desktop retains the original volume mix. Mobile uses the reduced output profile above; hover sound is naturally desktop-only because touch pointer entry is ignored.

@@ -28,4 +28,4 @@ Centered vertical list wrapper; nine project links; one fixed/absolute hover-pre
 Same nine project thumbnails as SpiralGallery.
 
 ## Responsive
-Under 900px: wrapper six grid columns and full content height, padding-top 20vh, title font-size 40px, preview 100px. Touch has no hover preview but links remain usable.
+Under 900px: wrapper uses the full six-column content width and each project occupies exactly one nowrap row. Titles use `clamp(18px, 5.25vw, 22px)` with tighter vertical rhythm so even the longest current title fits an iPhone-width row instead of leaving one or two characters on a second line. Touch has no hover preview. Mobile entry/exit uses a shorter, tightly staggered transform-only sequence; desktop typography and timing remain unchanged.

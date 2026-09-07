@@ -22,6 +22,7 @@ Fixed logo; centered view switch; right menu pill plus expanding drawer; bottom-
 - Logo click cycles through four expression states in the exact source order `face1 → face3 → face4 → face5 → face1`. Each click restarts the short, non-looping logo motion and triggers a smiley interaction sound. The hover tag reads `Click!!` in the reference.
 - View labels roll by translating the first span down and the second span from -100% to 0 in `.3s var(--ease-spring)` while option opacity changes over `.3s ease-out`. This extracted header motion stays synchronized with the overlapping gallery transitions; no instant text swap is allowed.
 - Menu expands/collapses; overlay blurs/dims the gallery.
+- Mobile menu performance: at 900px and below, omit the two decorative full-screen prelayers, remove backdrop blur, and use a compact transform-only drawer/label timeline. Opening any overlay pauses the hidden spiral RAF until the overlay closes. Desktop retains the layered reference animation.
 - Showreel hover transform changes to rotate(-13deg) scale(1.05).
 - Sound toggles icon state and `aria-pressed`.
 
@@ -34,4 +35,4 @@ Visible identity/tooltip copy is customized to `I'm Pengcheng`. Preserve the rem
 spiral, list, menu, close, works, about, contact, pertantpacome@gmail.com, showreel • 2025
 
 ## Responsive
-Preserve fixed composition. Reduce margins at 900/420px; drawer becomes most of the six-column mobile grid and menu link size scales with viewport.
+Preserve fixed composition. Reduce margins at 900/420px; drawer becomes the full mobile viewport. Mobile avoids full-screen blend/noise work while the menu is moving; desktop keeps the richer layered composition.

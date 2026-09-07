@@ -9,6 +9,7 @@ import { playUiSound, setAmbientContext } from "./sound";
 type SpiralGalleryProps = {
   projects: PacomeProject[];
   active: boolean;
+  paused?: boolean;
 };
 
 type SpiralStyle = CSSProperties & Record<`--pp-${string}`, string | number>;
@@ -52,7 +53,7 @@ function initialStyle(index: number, count: number): SpiralStyle {
   };
 }
 
-export function SpiralGallery({ projects, active }: SpiralGalleryProps) {
+export function SpiralGallery({ projects, active, paused = false }: SpiralGalleryProps) {
   const router = useRouter();
   const sceneRef = useRef<HTMLElement>(null);
   const cardRefs = useRef<Array<HTMLAnchorElement | null>>([]);
@@ -180,11 +181,14 @@ export function SpiralGallery({ projects, active }: SpiralGalleryProps) {
     let dragging = false;
     let pointerId = -1;
     let dragStartY = 0;
+    let dragStartX = 0;
     let dragStartPosition = 0;
     let lastPointerY = 0;
+    let lastPointerX = 0;
     let lastPointerTime = 0;
     let pointerVelocity = 0;
     let dragDistance = 180;
+    let dragAxis: "x" | "y" | null = null;
     const queuedImages = new WeakSet<HTMLImageElement>();
     const imageLoadTimers = new Set<number>();
 
@@ -238,6 +242,18 @@ export function SpiralGallery({ projects, active }: SpiralGalleryProps) {
 
         const difference = wrappedDifference(index, position, count);
         const distance = Math.abs(difference);
+        const withinMobileRenderWindow = !mobile || distance <= 6.25;
+        if (!withinMobileRenderWindow) {
+          if (card.dataset.ppRendered !== "0") {
+            card.dataset.ppRendered = "0";
+            card.style.visibility = "hidden";
+          }
+          return;
+        }
+        if (card.dataset.ppRendered !== "1") {
+          card.dataset.ppRendered = "1";
+          card.style.visibility = "visible";
+        }
         const angle = difference * ANGLE_STEP;
         const depth = (Math.cos(angle) + 1) / 2;
         const scale = Math.max(0.46, 0.53 + depth * 0.49 - distance * 0.009);
@@ -393,13 +409,19 @@ export function SpiralGallery({ projects, active }: SpiralGalleryProps) {
       dragging = true;
       pointerId = event.pointerId;
       dragStartY = event.clientY;
+      dragStartX = event.clientX;
       lastPointerY = event.clientY;
+      lastPointerX = event.clientX;
       lastPointerTime = performance.now();
       dragStartPosition = positionRef.current;
       pointerVelocity = 0;
       dragDistance = window.innerWidth <= 700 ? 132 : 180;
+      dragAxis = null;
       suppressClickRef.current = false;
       scene.classList.add("pp-spiral--dragging");
+      if (event.pointerType === "touch" && scene.setPointerCapture) {
+        scene.setPointerCapture(pointerId);
+      }
     };
 
     const preventNativeDrag = (event: Event) => event.preventDefault();
@@ -409,18 +431,27 @@ export function SpiralGallery({ projects, active }: SpiralGalleryProps) {
 
       const now = performance.now();
       const elapsed = Math.max(1, now - lastPointerTime);
-      const movement = lastPointerY - event.clientY;
+      const movementX = lastPointerX - event.clientX;
+      const movementY = lastPointerY - event.clientY;
+      const totalMovementX = dragStartX - event.clientX;
+      const totalMovementY = dragStartY - event.clientY;
+      if (!dragAxis && Math.max(Math.abs(totalMovementX), Math.abs(totalMovementY)) > 3) {
+        dragAxis = Math.abs(totalMovementX) >= Math.abs(totalMovementY) ? "x" : "y";
+      }
+      const movement = dragAxis === "x" ? movementX : movementY;
+      const totalMovement = dragAxis === "x" ? totalMovementX : totalMovementY;
       pointerVelocity = movement / dragDistance / elapsed;
       lastPointerY = event.clientY;
+      lastPointerX = event.clientX;
       lastPointerTime = now;
 
-      const totalMovement = dragStartY - event.clientY;
       if (Math.abs(totalMovement) > 5) {
         suppressClickRef.current = true;
         if (scene.setPointerCapture && !scene.hasPointerCapture?.(pointerId)) {
           scene.setPointerCapture(pointerId);
         }
       }
+      if (event.cancelable) event.preventDefault();
       const projectMovement = movement / dragDistance;
       const direction = Math.sign(projectMovement);
 
@@ -485,7 +516,7 @@ export function SpiralGallery({ projects, active }: SpiralGalleryProps) {
     if (Number.isFinite(savedPosition)) positionRef.current = savedPosition;
     paint(positionRef.current);
 
-    if (active) {
+    if (active && !paused) {
       scene.addEventListener("wheel", onWheel, { passive: false });
       scene.addEventListener("pointerdown", onPointerDown);
       scene.addEventListener("pointermove", onPointerMove);
@@ -524,7 +555,7 @@ export function SpiralGallery({ projects, active }: SpiralGalleryProps) {
       document.removeEventListener("visibilitychange", onVisibilityChange);
       motionQuery.removeEventListener("change", onMotionChange);
     };
-  }, [active, projects.length]);
+  }, [active, paused, projects.length]);
 
   const openProject = (event: MouseEvent<HTMLAnchorElement>, slug: string, href: string) => {
     if (!active || suppressClickRef.current) {

@@ -5,6 +5,8 @@ const SOUND_STORAGE_KEY = "pp-sound-enabled";
 const AMBIENT_TIME_STORAGE_KEY = "pp-ambient-time";
 const AMBIENT_VOLUME = 0.07;
 const AMBIENT_DETAIL_VOLUME = 0.022;
+const MOBILE_AMBIENT_MULTIPLIER = 0.62;
+const MOBILE_UI_MULTIPLIER = 0.72;
 const SOUND_PATHS: Record<UiSound | "ambient", string> = {
   entry: `${AUDIO_ROOT}/entry.mp3`,
   hover: `${AUDIO_ROOT}/hover.mp3`,
@@ -30,6 +32,18 @@ let ambientFadeGeneration = 0;
 let visibilityListenerInstalled = false;
 let lastHoverAt = 0;
 let ambientContext: "gallery" | "detail" = "gallery";
+let mobileAudioContext: AudioContext | null = null;
+const mobileAudioGains = new WeakMap<HTMLAudioElement, GainNode>();
+
+function usesMobileAudioProfile() {
+  return audioAvailable()
+    && window.matchMedia("(max-width: 900px) and (pointer: coarse)").matches;
+}
+
+function audioContextConstructor() {
+  const audioWindow = window as typeof window & { webkitAudioContext?: typeof AudioContext };
+  return audioWindow.AudioContext ?? audioWindow.webkitAudioContext;
+}
 
 function audioAvailable() {
   return typeof window !== "undefined" && typeof Audio !== "undefined";
@@ -58,7 +72,7 @@ function getClip(name: UiSound) {
   if (cached) return cached;
   const clip = new Audio(SOUND_PATHS[name]);
   clip.preload = "auto";
-  clip.volume = SOUND_VOLUMES[name];
+  clip.volume = SOUND_VOLUMES[name] * (usesMobileAudioProfile() ? MOBILE_UI_MULTIPLIER : 1);
   clips.set(name, clip);
   return clip;
 }
@@ -89,12 +103,50 @@ function persistAmbientTime() {
 }
 
 function ambientTargetVolume() {
-  return ambientContext === "detail" ? AMBIENT_DETAIL_VOLUME : AMBIENT_VOLUME;
+  const baseVolume = ambientContext === "detail" ? AMBIENT_DETAIL_VOLUME : AMBIENT_VOLUME;
+  return baseVolume * (usesMobileAudioProfile() ? MOBILE_AMBIENT_MULTIPLIER : 1);
 }
 
 function clampVolume(value: number) {
   if (!Number.isFinite(value)) return 0;
   return Math.min(1, Math.max(0, value));
+}
+
+function readOutputVolume(audio: HTMLAudioElement) {
+  return mobileAudioGains.get(audio)?.gain.value ?? audio.volume;
+}
+
+function setOutputVolume(audio: HTMLAudioElement, value: number) {
+  const level = clampVolume(value);
+  if (!usesMobileAudioProfile()) {
+    audio.volume = level;
+    return;
+  }
+
+  const AudioContextClass = audioContextConstructor();
+  if (!AudioContextClass) {
+    audio.volume = level;
+    return;
+  }
+
+  try {
+    mobileAudioContext ??= new AudioContextClass();
+    let gain = mobileAudioGains.get(audio);
+    if (!gain) {
+      const source = mobileAudioContext.createMediaElementSource(audio);
+      gain = mobileAudioContext.createGain();
+      source.connect(gain);
+      gain.connect(mobileAudioContext.destination);
+      mobileAudioGains.set(audio, gain);
+    }
+    audio.volume = 1;
+    gain.gain.value = level;
+    if (mobileAudioContext.state === "suspended") {
+      void mobileAudioContext.resume().catch(() => undefined);
+    }
+  } catch {
+    audio.volume = level;
+  }
 }
 
 function cancelAmbientFade() {
@@ -108,7 +160,7 @@ function fadeAmbient(target: number, duration: number, pauseWhenDone = false) {
   cancelAmbientFade();
   const generation = ambientFadeGeneration;
   const audio = ambient;
-  const startVolume = clampVolume(audio.volume);
+  const startVolume = clampVolume(readOutputVolume(audio));
   const endVolume = clampVolume(target);
   const safeDuration = Number.isFinite(duration) && duration > 0 ? duration : 0;
   const startedAt = performance.now();
@@ -118,7 +170,7 @@ function fadeAmbient(target: number, duration: number, pauseWhenDone = false) {
     const progress = safeDuration === 0
       ? 1
       : Math.min(1, Math.max(0, (now - startedAt) / safeDuration));
-    audio.volume = clampVolume(startVolume + (endVolume - startVolume) * progress);
+    setOutputVolume(audio, startVolume + (endVolume - startVolume) * progress);
     if (progress < 1) {
       ambientFrame = window.requestAnimationFrame(tick);
     } else {
@@ -133,12 +185,13 @@ function startAmbient() {
   if (!audioAvailable() || document.hidden || !getSoundEnabled()) return;
   const audio = getAmbient();
   audio.muted = false;
+  setOutputVolume(audio, readOutputVolume(audio));
   const playback = audio.play();
   if (playback) {
     void playback.then(() => {
       if (!getSoundEnabled() || document.hidden) {
         cancelAmbientFade();
-        audio.volume = 0;
+        setOutputVolume(audio, 0);
         audio.pause();
         return;
       }
@@ -187,7 +240,7 @@ export function playUiSound(name: UiSound, options: { force?: boolean } = {}) {
   const clip = getClip(name);
   clip.pause();
   clip.currentTime = 0;
-  clip.volume = SOUND_VOLUMES[name];
+  setOutputVolume(clip, SOUND_VOLUMES[name] * (usesMobileAudioProfile() ? MOBILE_UI_MULTIPLIER : 1));
   void clip.play().catch(() => undefined);
 }
 
