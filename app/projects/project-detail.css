@@ -54,9 +54,36 @@
   cursor: pointer;
   padding: 0;
   place-items: center;
+  touch-action: manipulation;
   transition: transform .3s cubic-bezier(.22, 1, .36, 1), background .2s ease;
   animation: pp-project-close-enter .45s cubic-bezier(.22, 1, .36, 1) .32s backwards;
 }
+
+.pp-project-close[aria-disabled="true"] { cursor: wait; }
+
+.pp-project-return-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  display: grid;
+  overflow: hidden;
+  background: #090909;
+  color: #f5f5f5;
+  font-size: 14px;
+  letter-spacing: .02em;
+  place-items: center;
+  animation: pp-project-return-in .24s cubic-bezier(.22, 1, .36, 1) both;
+}
+
+.pp-project-return-layer span {
+  border: 1px solid rgb(255 255 255 / .22);
+  border-radius: 999px;
+  padding: 10px 16px;
+  background: rgb(255 255 255 / .07);
+  animation: pp-project-return-pulse 1s ease-in-out infinite alternate;
+}
+
+.pp-project-page--leaving .pp-project-card { pointer-events: none; }
 
 .pp-project-close span {
   position: absolute;
@@ -730,11 +757,21 @@
   to { opacity: 1; transform: scale(1); }
 }
 
+@keyframes pp-project-return-in {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pp-project-return-pulse {
+  from { opacity: .58; transform: scale(.98); }
+  to { opacity: 1; transform: scale(1); }
+}
+
 @media (max-width: 900px) {
   .pp-project-page { --pp-project-margin: 10px; }
   .pp-project-card { border-radius: 13px; }
   .pp-project-page::before { border-radius: 0 0 24px 24px; }
-  .pp-project-close { width: 44px; height: 44px; }
+  .pp-project-close { width: 50px; height: 50px; }
   .pp-project-video-wrap { height: auto; aspect-ratio: 16 / 9; }
   .pp-project-video-action { top: min(calc(100svh - 72px), calc(100% - 34px)); bottom: auto; padding: 9px 15px 10px; font-size: 15px; }
   .pp-project-player { padding: 0; }
@@ -791,6 +828,7 @@
 @media (prefers-reduced-motion: reduce) {
   .pp-project-card { animation: none; }
   .pp-project-page::before { display: none; }
+  .pp-project-return-layer, .pp-project-return-layer span { animation: none; }
   .pp-project-close { animation: none; }
   .pp-project-styleframe, .pp-project-styleframe img, .pp-project-product-item img, .pp-project-next-image-wrap, .pp-project-close, .pp-project-video-action { transition: none; }
   .pp-project-styleframe { opacity: 1; transform: none; }

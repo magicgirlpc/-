@@ -221,9 +221,16 @@ export function SpiralGallery({ projects, active }: SpiralGalleryProps) {
       const cardWidth = mobile
         ? Math.min(280, Math.max(220, window.innerWidth * 0.68))
         : Math.min(440, Math.max(330, window.innerWidth * 0.29));
+      const geometryImageDistance = Math.ceil(
+        (window.innerHeight / 2 + cardWidth * 0.36) / verticalSpacing,
+      ) + 1;
+      // Loading every cover at once made the first mobile visit compete with
+      // audio and route code. Keep the visible helix filled, then let movement
+      // pull nearby covers into the queue as they approach the viewport.
       const visibleImageDistance = Math.min(
         count / 2,
-        Math.ceil((window.innerHeight / 2 + cardWidth * 0.36) / verticalSpacing) + 1,
+        geometryImageDistance,
+        mobile ? 5 : 7,
       );
 
       cardRefs.current.forEach((card, index) => {

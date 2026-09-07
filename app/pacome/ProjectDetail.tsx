@@ -93,6 +93,8 @@ export default function ProjectDetail({ project, nextProject }: {
   nextProject: PacomeProject;
 }) {
   const pageRef = useRef<HTMLElement>(null);
+  const returnTimerRef = useRef<number | null>(null);
+  const returnFallbackRef = useRef<number | null>(null);
   const router = useRouter();
   const searchParams = useSearchParams();
   const origin = searchParams.get("from") === "list" ? "list" : "spiral";
@@ -102,6 +104,7 @@ export default function ProjectDetail({ project, nextProject }: {
   const [activeEmbed, setActiveEmbed] = useState<string | null>(null);
   const [activeLocalVideo, setActiveLocalVideo] = useState<string | null>(null);
   const [enlargedFrame, setEnlargedFrame] = useState<string | null>(null);
+  const [isLeaving, setIsLeaving] = useState(false);
   const isProject03 = project.slug === "project-03";
   const [visibleExternalVideos, setVisibleExternalVideos] = useState(isProject03 ? 2 : project.additionalVideos?.length ?? 0);
   const [visibleStyleframes, setVisibleStyleframes] = useState(isProject03 ? 6 : project.styleframes.length);
@@ -115,10 +118,18 @@ export default function ProjectDetail({ project, nextProject }: {
   const hasStyleframes = project.styleframes.length > 0;
 
   const closeProject = () => {
+    if (isLeaving) return;
+    setIsLeaving(true);
     playUiSound("back");
     setAmbientContext("gallery");
     window.scrollTo(0, 0);
-    router.push(returnHref, { scroll: true });
+    returnTimerRef.current = window.setTimeout(() => {
+      returnTimerRef.current = null;
+      router.replace(returnHref, { scroll: true });
+      returnFallbackRef.current = window.setTimeout(() => {
+        window.location.assign(returnHref);
+      }, 2800);
+    }, 60);
   };
   const openPlayer = () => {
     if (project.mainExternalUrl) {
@@ -132,6 +143,16 @@ export default function ProjectDetail({ project, nextProject }: {
   useEffect(() => {
     setAmbientContext("detail");
     resumeSoundExperience();
+  }, []);
+
+  useEffect(() => {
+    router.prefetch(returnHref);
+    router.prefetch(`${nextProject.href}?from=${origin}`);
+  }, [nextProject.href, origin, returnHref, router]);
+
+  useEffect(() => () => {
+    if (returnTimerRef.current !== null) window.clearTimeout(returnTimerRef.current);
+    if (returnFallbackRef.current !== null) window.clearTimeout(returnFallbackRef.current);
   }, []);
 
   useEffect(() => {
@@ -193,11 +214,26 @@ export default function ProjectDetail({ project, nextProject }: {
   }, [project.slug]);
 
   return (
-    <main className={`pp-project-page pp-project-page--${project.slug}`} ref={pageRef}>
-      <button className="pp-project-close" type="button" aria-label={`Back to ${origin} portfolio`} onClick={closeProject}>
+    <main className={`pp-project-page pp-project-page--${project.slug}${isLeaving ? " pp-project-page--leaving" : ""}`} ref={pageRef}>
+      <Link
+        className="pp-project-close"
+        href={returnHref}
+        aria-label={`Back to ${origin} portfolio`}
+        aria-disabled={isLeaving}
+        onClick={(event) => {
+          event.preventDefault();
+          closeProject();
+        }}
+      >
         <span aria-hidden="true" />
         <span aria-hidden="true" />
-      </button>
+      </Link>
+
+      {isLeaving ? (
+        <div className="pp-project-return-layer" role="status" aria-live="polite">
+          <span>返回作品集</span>
+        </div>
+      ) : null}
 
       <article className="pp-project-card" id="project-infos">
         <div className={`pp-project-video-wrap${hasVideo ? "" : " pp-project-video-wrap--empty"}`}>
@@ -473,10 +509,9 @@ export default function ProjectDetail({ project, nextProject }: {
       ) : null}
 
       <section className="pp-project-next" aria-label="Next project">
-        <Link className="pp-project-back" href={returnHref} scroll onClick={() => {
-          playUiSound("back");
-          setAmbientContext("gallery");
-          window.scrollTo(0, 0);
+        <Link className="pp-project-back" href={returnHref} scroll onClick={(event) => {
+          event.preventDefault();
+          closeProject();
         }}>back to home</Link>
         <Link className="pp-project-next-image-wrap" href={`${nextProject.href}?from=${origin}`} aria-label={`Next project: ${nextProject.title}`} onClick={() => playUiSound("open")}>
           <img className="pp-project-next-image" src={nextProject.image} alt="" />

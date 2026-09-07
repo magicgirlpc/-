@@ -15,7 +15,7 @@ export default function PortfolioExperience() {
   const resume = searchParams.get("resume") === "1";
   const requestedView = searchParams.get("view") === "list" ? "list" : "spiral";
   const initialView = resume ? requestedView : "spiral";
-  const [entered, setEntered] = useState(false);
+  const [entered, setEntered] = useState(resume);
   const [soundOn, setSoundOn] = useState(false);
   const [view, setView] = useState<"spiral" | "list">(initialView);
 
@@ -90,14 +90,12 @@ export default function PortfolioExperience() {
 
   useEffect(() => {
     if (!resume) return;
-    const navigation = performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming | undefined;
-    if (navigation?.type === "reload") {
+    setEntered(true);
+    const frame = window.requestAnimationFrame(() => {
       const url = new URL(window.location.href);
       url.searchParams.delete("resume");
       window.history.replaceState(window.history.state, "", `${url.pathname}${url.search}${url.hash}`);
-      return;
-    }
-    const frame = window.requestAnimationFrame(() => setEntered(true));
+    });
     return () => window.cancelAnimationFrame(frame);
   }, [resume]);
 
