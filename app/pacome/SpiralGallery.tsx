@@ -201,6 +201,7 @@ export function SpiralGallery({ projects, active, paused = false }: SpiralGaller
       const applySource = () => {
         if (!image.isConnected || image.getAttribute("src")) return;
         image.fetchPriority = distance < 0.5 ? "high" : "low";
+        if (image.dataset.srcset) image.srcset = image.dataset.srcset;
         image.src = source;
       };
 
@@ -647,9 +648,13 @@ export function SpiralGallery({ projects, active, paused = false }: SpiralGaller
               }}
               className="pp-spiral__image"
               data-src={project.previewImage ?? project.image}
+              data-srcset={project.previewImageSmall && project.previewImage
+                ? `${project.previewImageSmall} 640w, ${project.previewImage} 960w`
+                : undefined}
               alt=""
-              width={960}
-              height={540}
+              width={project.previewWidth ?? 960}
+              height={project.previewHeight ?? 540}
+              sizes="(max-width: 700px) 68vw, min(29vw, 440px)"
               loading="lazy"
               decoding="async"
               fetchPriority="low"
@@ -671,8 +676,12 @@ export function SpiralGallery({ projects, active, paused = false }: SpiralGaller
             className="pp-spiral__detail-image"
             src={detailProject.previewImage ?? detailProject.image}
             alt=""
-            width={960}
-            height={540}
+            srcSet={detailProject.previewImageSmall && detailProject.previewImage
+              ? `${detailProject.previewImageSmall} 640w, ${detailProject.previewImage} 960w`
+              : undefined}
+            width={detailProject.previewWidth ?? 960}
+            height={detailProject.previewHeight ?? 540}
+            sizes="(max-width: 700px) 72vw, min(34vw, 520px)"
             loading="lazy"
             decoding="async"
             draggable={false}

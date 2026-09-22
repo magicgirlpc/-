@@ -261,9 +261,13 @@ export default function ListGallery({ projects, active }: ListGalleryProps) {
           <img
             className="pp-list__preview-image pp-list__preview-image--active"
             src={projects[hoveredIndex].previewImage ?? projects[hoveredIndex].image}
+            srcSet={projects[hoveredIndex].previewImageSmall && projects[hoveredIndex].previewImage
+              ? `${projects[hoveredIndex].previewImageSmall} 640w, ${projects[hoveredIndex].previewImage} 960w`
+              : undefined}
             alt=""
             width={330}
             height={186}
+            sizes="(max-width: 900px) 72vw, 330px"
             loading="eager"
             decoding="async"
             draggable={false}

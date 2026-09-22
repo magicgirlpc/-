@@ -5,6 +5,10 @@ export type PacomeProject = {
   image: string;
   /** A small, screen-sized derivative used only by the animated galleries. */
   previewImage?: string;
+  /** A mobile-sized candidate; the browser chooses it through srcset. */
+  previewImageSmall?: string;
+  previewWidth?: number;
+  previewHeight?: number;
   href: string;
   description: string;
   playbackId: string;
@@ -149,6 +153,9 @@ export const pacomeProjects: PacomeProject[] = Array.from({ length: projectTitle
     year: "",
     image,
     previewImage: `/portfolio/project-${number}/cover-optimized.jpg`,
+    previewImageSmall: `/portfolio/project-${number}/cover-mobile.jpg`,
+    previewWidth: 960,
+    previewHeight: index === 0 || index === 1 ? 600 : index === 13 || index === 15 ? 539 : 540,
     href: `/projects/${slug}`,
     description: projectDescriptions[index],
     playbackId: "",

@@ -49,8 +49,8 @@ function ExternalVideoTitle({ url, fallback, resolveRemote = true }: { url: stri
     const element = titleRef.current;
     if (!element || shouldLoad) return;
     if (!("IntersectionObserver" in window)) {
-      setShouldLoad(true);
-      return;
+      const timeout = window.setTimeout(() => setShouldLoad(true), 0);
+      return () => window.clearTimeout(timeout);
     }
 
     const observer = new IntersectionObserver(
@@ -237,7 +237,7 @@ export default function ProjectDetail({ project, nextProject }: {
 
       <article className="pp-project-card" id="project-infos">
         <div className={`pp-project-video-wrap${hasVideo ? "" : " pp-project-video-wrap--empty"}`}>
-          <ProjectVideo playbackId={project.playbackId} sourceUrl={project.previewVideoUrl ?? project.videoUrl} poster={project.image} title={project.title} />
+          <ProjectVideo playbackId={project.playbackId} sourceUrl={project.previewVideoUrl ?? project.videoUrl} poster={project.previewImage ?? project.image} title={project.title} />
           {hasVideo ? (
             <button
               className="pp-project-video-action"
@@ -514,7 +514,19 @@ export default function ProjectDetail({ project, nextProject }: {
           closeProject();
         }}>back to home</Link>
         <Link className="pp-project-next-image-wrap" href={`${nextProject.href}?from=${origin}`} aria-label={`Next project: ${nextProject.title}`} onClick={() => playUiSound("open")}>
-          <img className="pp-project-next-image" src={nextProject.image} alt="" />
+          <img
+            className="pp-project-next-image"
+            src={nextProject.previewImage ?? nextProject.image}
+            srcSet={nextProject.previewImageSmall && nextProject.previewImage
+              ? `${nextProject.previewImageSmall} 640w, ${nextProject.previewImage} 960w`
+              : undefined}
+            sizes="(max-width: 900px) calc(100vw - 48px), 720px"
+            width={nextProject.previewWidth ?? 960}
+            height={nextProject.previewHeight ?? 540}
+            loading="lazy"
+            decoding="async"
+            alt=""
+          />
           <span className="pp-project-next-tag pp-project-next-tag--top">keep scrolling !</span>
           <span className="pp-project-next-tag pp-project-next-tag--bottom">next up...</span>
           <span className="pp-project-next-title">{nextProject.title}</span>
