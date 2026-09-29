@@ -20,8 +20,8 @@ function DeferredProjectImage({ src, alt }: { src: string; alt: string }) {
     const image = imageRef.current;
     if (!image || ready) return;
     if (!("IntersectionObserver" in window)) {
-      const timeout = window.setTimeout(() => setReady(true), 0);
-      return () => window.clearTimeout(timeout);
+      const timeout = globalThis.setTimeout(() => setReady(true), 0);
+      return () => globalThis.clearTimeout(timeout);
     }
 
     const observer = new IntersectionObserver(
@@ -49,8 +49,8 @@ function ExternalVideoTitle({ url, fallback, resolveRemote = true }: { url: stri
     const element = titleRef.current;
     if (!element || shouldLoad) return;
     if (!("IntersectionObserver" in window)) {
-      const timeout = window.setTimeout(() => setShouldLoad(true), 0);
-      return () => window.clearTimeout(timeout);
+      const timeout = globalThis.setTimeout(() => setShouldLoad(true), 0);
+      return () => globalThis.clearTimeout(timeout);
     }
 
     const observer = new IntersectionObserver(
@@ -98,7 +98,7 @@ export default function ProjectDetail({ project, nextProject }: {
   const router = useRouter();
   const searchParams = useSearchParams();
   const origin = searchParams.get("from") === "list" ? "list" : "spiral";
-  const returnHref = `/?view=${origin}&resume=1`;
+  const returnHref = `/?view=${origin}&entered=1`;
   const hasVideo = Boolean(project.playbackId || project.videoUrl || project.previewVideoUrl || project.bilibiliBvid || project.mainExternalUrl);
   const [playerOpen, setPlayerOpen] = useState(false);
   const [activeEmbed, setActiveEmbed] = useState<string | null>(null);
@@ -122,13 +122,14 @@ export default function ProjectDetail({ project, nextProject }: {
     setIsLeaving(true);
     playUiSound("back");
     setAmbientContext("gallery");
-    window.scrollTo(0, 0);
+    window.sessionStorage.setItem("pp-portfolio-entered", "1");
+    window.sessionStorage.setItem("pp-portfolio-view", origin);
     returnTimerRef.current = window.setTimeout(() => {
       returnTimerRef.current = null;
       router.replace(returnHref, { scroll: true });
       returnFallbackRef.current = window.setTimeout(() => {
-        window.location.assign(returnHref);
-      }, 2800);
+        if (window.location.pathname.startsWith("/projects/")) window.location.assign(returnHref);
+      }, 1800);
     }, 60);
   };
   const openPlayer = () => {
@@ -141,9 +142,11 @@ export default function ProjectDetail({ project, nextProject }: {
   const closePlayer = () => setPlayerOpen(false);
 
   useEffect(() => {
+    window.sessionStorage.setItem("pp-portfolio-entered", "1");
+    window.sessionStorage.setItem("pp-portfolio-view", origin);
     setAmbientContext("detail");
     resumeSoundExperience();
-  }, []);
+  }, [origin]);
 
   useEffect(() => {
     router.prefetch(returnHref);

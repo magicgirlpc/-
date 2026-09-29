@@ -14,7 +14,7 @@ export type ChromeOverlayProps = {
 };
 
 const assetRoot = "/sites/pacomepertant-com-b16b412f/root-8a5edab2";
-const resumePages = [1, 2, 3] as const;
+const resumePages = [1, 2] as const;
 const logoFaces = ["face1", "face3", "face4", "face5"] as const;
 
 function ViewLabel({ label }: { label: "spiral" | "list" }) {
@@ -123,7 +123,7 @@ function ResumeViewer({ onClose }: { onClose: () => void }) {
           <strong id="pp-resume-title">张鹏程工作简历</strong>
         </div>
         <div className="pp-resume-viewer__actions">
-          <a href="/resume.pdf" download="张鹏程工作简历.pdf">下载 PDF</a>
+          <a href="/resume.pdf" download="张鹏程-编导-含作品集二维码.pdf">下载 PDF</a>
           <button type="button" onClick={onClose} aria-label="关闭简历预览">关闭 <span aria-hidden="true">×</span></button>
         </div>
       </header>
@@ -138,7 +138,7 @@ function ResumeViewer({ onClose }: { onClose: () => void }) {
               loading={page === 1 ? "eager" : "lazy"}
               decoding="async"
             />
-            <figcaption>{String(page).padStart(2, "0")} / 03</figcaption>
+            <figcaption>{String(page).padStart(2, "0")} / {String(resumePages.length).padStart(2, "0")}</figcaption>
           </figure>
         ))}
       </div>
@@ -198,7 +198,7 @@ export function ChromeOverlay({
       timeline.to([panel, ...layers], { xPercent: 105, duration: mobile ? .26 : .34, ease: "power3.in", overwrite: true });
     }
 
-    return () => timeline.kill();
+    return () => { timeline.kill(); };
   }, [menuOpen]);
 
   useEffect(() => {

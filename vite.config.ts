@@ -52,6 +52,9 @@ export default defineConfig(async () => {
       sites(),
       cloudflare({
         viteEnvironment: { name: "rsc", childEnvironments: ["ssr"] },
+        // The Codex/macOS sandbox blocks the default inspector port (9229).
+        // The inspector is optional and disabling it keeps local preview reliable.
+        inspectorPort: false,
         config: localBindingConfig,
       }),
     ],

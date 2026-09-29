@@ -230,7 +230,7 @@ export default function ListGallery({ projects, active }: ListGalleryProps) {
                 data-project={project.slug}
                 data-year={project.year}
                 style={projectStyle}
-                aria-label={`${project.title} (${project.year})`}
+                aria-label={`${project.title}${project.year ? ` (${project.year})` : ""}`}
                 tabIndex={active ? undefined : -1}
                 onClick={() => {
                   playUiSound("open");

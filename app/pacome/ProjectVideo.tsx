@@ -45,13 +45,13 @@ export default function ProjectVideo({ playbackId, sourceUrl, poster, title, con
     };
     const idle = "requestIdleCallback" in window
       ? window.requestIdleCallback(load, { timeout: 900 })
-      : window.setTimeout(load, 700);
+      : globalThis.setTimeout(load, 700);
 
     return () => {
       cancelled = true;
       if (typeof idle === "number") {
         if ("cancelIdleCallback" in window) window.cancelIdleCallback(idle);
-        else window.clearTimeout(idle);
+        else globalThis.clearTimeout(idle);
       }
     };
   }, [defer, shouldLoad]);

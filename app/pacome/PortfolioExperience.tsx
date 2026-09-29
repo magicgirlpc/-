@@ -9,6 +9,9 @@ import SpiralGallery from "./SpiralGallery";
 import { pacomeProjects } from "./data";
 import { prepareSoundAssets, resumeSoundExperience, setAmbientContext, setSoundEnabled } from "./sound";
 
+const enteredKey = "pp-portfolio-entered";
+const viewKey = "pp-portfolio-view";
+
 export default function PortfolioExperience() {
   const experienceRef = useRef<HTMLElement>(null);
   const searchParams = useSearchParams();
@@ -22,12 +25,23 @@ export default function PortfolioExperience() {
   const [overlayActive, setOverlayActive] = useState(false);
 
   const persistEnteredView = useCallback((nextView: "spiral" | "list") => {
+    window.sessionStorage.setItem(enteredKey, "1");
+    window.sessionStorage.setItem(viewKey, nextView);
     const url = new URL(window.location.href);
     url.searchParams.delete("resume");
     url.searchParams.set("entered", "1");
     url.searchParams.set("view", nextView);
     window.history.replaceState(window.history.state, "", `${url.pathname}${url.search}${url.hash}`);
   }, []);
+
+  useLayoutEffect(() => {
+    if (entered || window.sessionStorage.getItem(enteredKey) !== "1") return;
+    const storedView = window.sessionStorage.getItem(viewKey) === "list" ? "list" : "spiral";
+    const nextView = restoreEntered ? requestedView : storedView;
+    setView(nextView);
+    setEntered(true);
+    persistEnteredView(nextView);
+  }, [entered, persistEnteredView, requestedView, restoreEntered]);
 
   useLayoutEffect(() => {
     const experience = experienceRef.current;
@@ -43,9 +57,9 @@ export default function PortfolioExperience() {
 
     const syncViewport = () => {
       const visualHeight = window.visualViewport?.height ?? 0;
-      const viewportHeight = window.innerWidth <= 900 && visualHeight > 0
-        ? visualHeight
-        : Math.max(window.innerHeight, root.clientHeight, visualHeight);
+      // Browser toolbars and some embedded browsers can report a visual viewport
+      // much shorter than the layout viewport, which clips the entire gallery.
+      const viewportHeight = Math.max(window.innerHeight, root.clientHeight, visualHeight);
       const value = `${Math.ceil(viewportHeight)}px`;
       if (value === lastViewportValue) return;
       lastViewportValue = value;

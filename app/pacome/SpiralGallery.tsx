@@ -613,7 +613,7 @@ export function SpiralGallery({ projects, active, paused = false }: SpiralGaller
             className={`pp-spiral__card${index === 0 ? " pp-spiral__card--current" : ""}${active && previewSlug === project.slug ? " pp-spiral__card--previewed" : ""}${openingSlug === project.slug ? " pp-spiral__card--opening-target" : openingSlug ? " pp-spiral__card--opening-away" : ""}`}
             href={`${project.href}?from=spiral`}
             tabIndex={active ? 0 : -1}
-            aria-label={`${project.title}, ${project.year} — open project`}
+            aria-label={`${project.title}${project.year ? `, ${project.year}` : ""} — open project`}
             aria-current={index === 0 ? "true" : undefined}
             draggable={false}
             style={initialStyle(index, projects.length)}
